@@ -8,8 +8,6 @@ Plugin development instructions:
 ---------------
 - USE         -
 ---------------
-Add the Contents folder to a new folder
-Rename new folder to <PLUGIN_NAME>.bundle
 Copy bundle to : ~/Library/Application\ Support/Plex\ Media\ Server/Plug-ins
 
 ---------------
