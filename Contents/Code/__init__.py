@@ -72,9 +72,9 @@ def SeriesMenu(sender, ShowUrl, ShowTitle):
     for show in shows:
         video = {}
         video['ShowName'] = show.xpath("span[@class='title']")[0].text
-        Log("Found Show " + video['ShowName'])
+        Log("Found Show " + video['ShowName'] + "(length=" + str(len(video['ShowName'])) + ". comparing against " + ShowTitle + " (legnth " + str(len(ShowTitle)))
         
-        if video['ShowName'] == ShowTitle:
+        if video['ShowName'].upper() == ShowTitle.upper():
             temp = show.xpath("span[@class='subtitle']")[0].text
             video['Url'] = BASE + show.get('href')
             Log("Url" + video['Url'])
