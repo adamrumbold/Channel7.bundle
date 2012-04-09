@@ -76,9 +76,10 @@ def SeriesMenu(sender, ShowUrl, ShowTitle):
         
         if video['ShowName'].upper() == ShowTitle.upper():
             temp = show.xpath("span[@class='subtitle']")[0].text
+            Log("Got temp of:"+ temp)
             video['Url'] = BASE + show.get('href')
-            Log("Url" + video['Url'])
-            video['Episode'] = temp.partition(',')[2] 
+            #Log("Url" + video['Url'])
+            video['Episode'] = show.xpath("span[@class='subtitle']/span")[0].text
             video['Air Date'] = temp.partition(',')[0]
             video['Summary'] = "Broadcast" + video['Air Date']
             Log("Episode = " + str(video['Episode']))
