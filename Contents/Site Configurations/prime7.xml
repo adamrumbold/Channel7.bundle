@@ -2,10 +2,11 @@
 
 <site site="http://au.tv.yahoo.com/.*"
     plugin="http://d.yimg.com/nl/australia/au-tv/player.swf*"
- 	initialState="paused"
- 	version="1.0">
-
-<crop x="0" y="0" width="630" height="354" />
+     initialState="unstarted"
+ 	version="1.0"
+	windowWidth="1280"
+	windowHeight="720"
+>
 
 <seekbar type="simple">
  <start x="49" y="308" />
@@ -18,13 +19,28 @@
 
 </seekbar>
 
+<state name="unstarted">
+  <event>
+   <condition>
+    <frameLoaded />
+   </condition>
+   <action>
+    <pause time="5000" />
+    <click x="65" y="287" />
+    <goto state="playing" />
+   </action>
+  </event>
+</state>
+
 <state name="playing">
   <event>
    <condition>
     <command name="pause" />
    </condition>
    <action>
-    <click x="19" y="301" />
+    <click x="65" y="200" /> <!-- raise the progress bar -->
+    <pause time="250" />
+    <click x="17" y="344" />
     <goto state="paused" />
    </action>
   </event>
@@ -36,7 +52,7 @@
     <command name="play" />
    </condition>
    <action>
-    <click x="75" y="281" />
+    <click x="17" y="344" />
     <goto state="playing" />
    </action>
   </event>

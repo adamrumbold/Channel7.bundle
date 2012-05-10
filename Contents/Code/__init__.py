@@ -7,7 +7,7 @@ from PMS.Shortcuts import *
 
 VIDEO_PREFIX = "/video/prime7"
 NAME = L('Title')
-
+VERSION = 0.3
 DEFAULT_CACHE_INTERVAL = 1800
 OTHER_CACHE_INTERVAL = 300
 
@@ -66,28 +66,32 @@ def SeriesMenu(sender, ShowUrl, ShowTitle):
     #backGround = htmlResponse.xpath("id(\'bd\')/div[1]/div[2]/div[1]/div[2]/a", namespaces=myNamespaces)[0].get('href')
     #Log("background url " + backGround)
     #dir = MediaContainer(title1="Prime7", title2=ShowTitle, viewGroup="InfoList", art=backGround)
-    xpathQuery1 = "//div[.]/h3/a"
+    #xpathQuery1 = "//div[.]/h3/a"
+    xpathQuery1 = "//div[@class='itemdetails']"
     shows = htmlResponse.xpath(xpathQuery1)
     Log ("Try xpath results length" + str(len(shows)))
     for show in shows:
-        video = {}
-        video['ShowName'] = show.xpath("span[@class='title']")[0].text
-        Log("Found Show " + video['ShowName'] + "(length=" + str(len(video['ShowName'])) + ". comparing against " + ShowTitle + " (legnth " + str(len(ShowTitle)))
+        inner = show.xpath("h3/a")
+        if len(inner) > 0:
+            inner = inner[0]
+            video = {}
+            video['ShowName'] = inner.xpath("span[@class='title']")[0].text
+            Log("Found Show " + video['ShowName'])
         
-        if video['ShowName'].upper() == ShowTitle.upper():
-            temp = show.xpath("span[@class='subtitle']")[0].text
-            Log("Got temp of:"+ temp)
-            video['Url'] = BASE + show.get('href')
-            #Log("Url" + video['Url'])
-            video['Episode'] = show.xpath("span[@class='subtitle']/span")[0].text
-            video['Air Date'] = temp.partition(',')[0]
-            video['Summary'] = "Broadcast" + video['Air Date']
-            Log("Episode = " + str(video['Episode']))
-            Log("Show = " + video['ShowName'])
-            Log("we match")
-            dir.Append(WebVideoItem(video['Url'], title=str(video['Episode']), summary=video['Summary']))
-        else:
-            Log("no match")
+            if video['ShowName'] == ShowTitle:
+                temp = inner.xpath("span[@class='subtitle']/span")[0].text
+                video['Url'] = BASE + inner.get('href')
+                Log("Url" + video['Url'])
+                Log(temp)
+                video['Episode'] = inner.xpath("span[@class='subtitle']/span")[0].text
+                video['Air Date'] = inner.xpath("span[@class='subtitle']")[0].text
+                video['Summary'] = show.xpath("p")[0].text
+                Log("Episode = " + str(video['Episode']))
+                Log("Show = " + video['ShowName'])
+                Log("we match")
+                dir.Append(WebVideoItem(video['Url'], title=str(video['Episode']), summary=video['Summary']))
+            else:
+                Log("no match")
     
     Log("returning")
     return dir
