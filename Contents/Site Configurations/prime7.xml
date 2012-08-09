@@ -11,6 +11,7 @@
 <seekbar type="simple">
  <start x="49" y="308" />
  <end   x="185" y="308" />
+
  <played>
    <condition>
     <command name="play" />
@@ -25,8 +26,8 @@
     <frameLoaded />
    </condition>
    <action>
-    <pause time="5000" />
-    <click x="65" y="287" />
+    <pause time="1000"/>
+    <click x="75" y="75" />
     <goto state="playing" />
    </action>
   </event>
