@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <site site="http://au.tv.yahoo.com/.*"
-    plugin="http://d.yimg.com/nl/australia/au-tv/player.swf*"
-     initialState="unstarted"
+    plugin="http://l.yimg.com/rx/builds/3.6.6.8916/assets/player.swf*"
+     initialState="playing"
  	version="1.0"
 	windowWidth="1280"
 	windowHeight="720"
@@ -26,7 +26,7 @@
     <frameLoaded />
    </condition>
    <action>
-    <pause time="1000"/>
+    <pause time="2000"/>
     <click x="75" y="75" />
     <goto state="playing" />
    </action>
