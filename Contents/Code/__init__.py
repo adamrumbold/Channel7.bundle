@@ -7,7 +7,7 @@ from PMS.Shortcuts import *
 
 VIDEO_PREFIX = "/video/prime7"
 NAME = L('Title')
-VERSION = 0.4
+VERSION = 0.5
 DEFAULT_CACHE_INTERVAL = 1800
 OTHER_CACHE_INTERVAL = 300
 
