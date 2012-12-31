@@ -12,7 +12,7 @@ DEFAULT_CACHE_INTERVAL = 1800
 OTHER_CACHE_INTERVAL = 300
 
 ART           = 'prime7-background.jpg'
-ICON          = 'icon-default.jpg'
+ICON          = 'seven.png'
 
 BROWSE_URL = "http://au.tv.yahoo.com/plus7/browse/"
 BASE = "http://au.tv.yahoo.com"
