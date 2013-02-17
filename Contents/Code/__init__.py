@@ -1,7 +1,4 @@
 # PMS plugin framework
-from PMS import *
-from PMS.Objects import *
-from PMS.Shortcuts import *
 
 ####################################################################################################
 
@@ -39,7 +36,7 @@ def Start():
 def VideoMainMenu():
     dir = MediaContainer(viewGroup="InfoList")
     myNamespaces = {'ns1':'http://www.w3.org/1999/xhtml'}
-    xml = XML.ElementFromURL(BROWSE_URL,True)
+    xml = HTML.ElementFromURL(BROWSE_URL)
     xpathQuery = "//li[.]"
     for Entry in xml.xpath(xpathQuery, namespaces=myNamespaces):
         show = {}
@@ -62,7 +59,7 @@ def SeriesMenu(sender, ShowUrl, ShowTitle):
     Log("Clicked on category item: " + ShowTitle)
     Log("Reading URL:**" + ShowUrl + "**")
     myNamespaces = {'ns1':'http://www.w3.org/1999/xhtml'}
-    htmlResponse = XML.ElementFromURL(ShowUrl,isHTML=True,errors='ignore')
+    htmlResponse = HTML.ElementFromURL(ShowUrl)
     xpathQuery1 = "//div[@class='itemdetails']"
     shows = htmlResponse.xpath(xpathQuery1)
     Log ("Try xpath results length" + str(len(shows)))
