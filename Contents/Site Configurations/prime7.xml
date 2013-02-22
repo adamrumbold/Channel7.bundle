@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <site site="http://au.tv.yahoo.com/.*"
-    plugin="http://l.yimg.com/rx/builds/3.6.6.8916/assets/player.swf*"
+    plugin="http://l.yimg.com/rx/builds/3.7.1.8996/assets/player.swf"
      initialState="playing"
  	version="1.0"
 	windowWidth="1280"
