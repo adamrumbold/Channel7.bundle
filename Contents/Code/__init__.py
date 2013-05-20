@@ -2,22 +2,20 @@
 
 ####################################################################################################
 
-VIDEO_PREFIX = "/video/prime7"
+VIDEO_PREFIX = "/video/channel7"
 NAME = L('Title')
 VERSION = 0.5
 DEFAULT_CACHE_INTERVAL = 1800
 OTHER_CACHE_INTERVAL = 300
 
 ART           = 'prime7-background.jpg'
-ICON          = 'seven.png'
+ICON          = 'channel7.png'
 
 BROWSE_URL = "http://au.tv.yahoo.com/plus7/browse/"
 BASE = "http://au.tv.yahoo.com"
 ####################################################################################################
 
 def Start():
-    
-    Log("In Start")
     
     Plugin.AddPrefixHandler(VIDEO_PREFIX, VideoMainMenu, L('VideoTitle'), ICON, ART)
 
@@ -27,7 +25,7 @@ def Start():
     MediaContainer.title1 = NAME
     DirectoryItem.thumb = R(ICON)
     HTTP.Headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0.1) Gecko/20100101 Firefox/4.0.1'
-    HTTP.SetCacheTime(DEFAULT_CACHE_INTERVAL)
+    #HTTP.CacheTime(float(DEFAULT_CACHE_INTERVAL))
 
 ####################################################################################################
 
@@ -36,33 +34,28 @@ def Start():
 def VideoMainMenu():
     dir = MediaContainer(viewGroup="InfoList")
     myNamespaces = {'ns1':'http://www.w3.org/1999/xhtml'}
-    xml = HTML.ElementFromURL(BROWSE_URL)
+    xml = HTML.ElementFromURL(BROWSE_URL, headers={'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0.1) Gecko/20100101 Firefox/4.0.1'})
     xpathQuery = "//li[.]"
     for Entry in xml.xpath(xpathQuery, namespaces=myNamespaces):
         show = {}
         try:
-            Log("Trying to get title")
             show['Title'] = Entry.xpath("h3/a")[0].text
-            Log("got title - continuing")
             show['Thumb'] = Entry.xpath("a[1]/img")[0].get('src')
             show['Url'] = Entry.xpath("h3/a")[0].get('href')
             Log("Found Title: " + show['Title'])
             Log("With Url: " + show['Url'])
-            Log("With thumb: " + show['Thumb'])
             dir.Append(Function(DirectoryItem(SeriesMenu, title=show['Title'], thumb=show['Thumb']), ShowUrl=show['Url'], ShowTitle=show['Title']))
         except IndexError:
             Log ("Index error handled")
     return dir
 
 def SeriesMenu(sender, ShowUrl, ShowTitle):
-    dir = MediaContainer(title1="Prime7", title2=ShowTitle, viewGroup="InfoList")
-    Log("Clicked on category item: " + ShowTitle)
+    dir = MediaContainer(title1="channel 7", title2=ShowTitle, viewGroup="InfoList")
     Log("Reading URL:**" + ShowUrl + "**")
     myNamespaces = {'ns1':'http://www.w3.org/1999/xhtml'}
-    htmlResponse = HTML.ElementFromURL(ShowUrl)
+    htmlResponse = HTML.ElementFromURL(ShowUrl,headers={'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0.1) Gecko/20100101 Firefox/4.0.1'})
     xpathQuery1 = "//div[@class='itemdetails']"
     shows = htmlResponse.xpath(xpathQuery1)
-    Log ("Try xpath results length" + str(len(shows)))
     for show in shows:
         inner = show.xpath("h3/a")
         if len(inner) > 0:
@@ -90,9 +83,8 @@ def SeriesMenu(sender, ShowUrl, ShowTitle):
                 Log("Show = " + video['ShowName'])
                 Log("we match")
                 # set to auto play
-                dir.Append(WebVideoItem(video['Url']+"?play=1", title=str(video['Episode']), summary=video['Summary']))
+                dir.Append(WebVideoItem(video['Url']+"?play=1", title=str(video['Episode']),summary=video['Summary']))
             else:
                 pass
     
-    Log("returning")
     return dir
