@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <site site="http://au.tv.yahoo.com/.*"
-    plugin="http://l.yimg.com/rx/builds/3.8.5.9778/assets/player.swf"
+    plugin="http://c.brightcove.com/services/viewer/.*"
      initialState="playing"
  	version="1.0"
-	windowWidth="1280"
-	windowHeight="720"
+	windowWidth="853"
+	windowHeight="480"
 >
 
 <seekbar type="simple">
