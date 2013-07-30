@@ -22,61 +22,43 @@ def Start():
         
 ####################################################################################################
 
-#setup the Main Video Menu - ie. get Top level categories
 def VideoMainMenu():
     cookies = HTTP.CookiesForURL("http://au.tv.yahoo.com")
     dir = MediaContainer(viewGroup="InfoList")
-    myNamespaces = {'ns1':'http://www.w3.org/1999/xhtml'}
     xml = HTML.ElementFromURL(BROWSE_URL, headers={'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0.1) Gecko/20100101 Firefox/4.0.1'})
-    xpathQuery = "//li[.]"
-    for Entry in xml.xpath(xpathQuery, namespaces=myNamespaces):
+    for Entry in xml.xpath("//li[.]"):
         show = {}
         try:
             show['Title'] = Entry.xpath("h3/a")[0].text
             show['Thumb'] = Entry.xpath("a[1]/img")[0].get('src')
             show['Url'] = Entry.xpath("h3/a")[0].get('href')
-            Log("Found Title: " + show['Title'])
-            Log("With Url: " + show['Url'])
             dir.Append(Function(DirectoryItem(SeriesMenu, title=show['Title'], thumb=show['Thumb']), ShowUrl=show['Url'], ShowTitle=show['Title'], httpCookies=cookies))
         except IndexError:
-            Log ("Index error handled")
+            Log.Debug ("failed parsing " + str(show) )
     return dir
 
 def SeriesMenu(sender, ShowUrl, ShowTitle, httpCookies):
     dir = MediaContainer(title1="channel 7", title2=ShowTitle, viewGroup="InfoList")
-    Log("Reading URL:**" + ShowUrl + "**")
-    myNamespaces = {'ns1':'http://www.w3.org/1999/xhtml'}
-    #qHTTP.Headers()
     htmlResponse = HTML.ElementFromURL(ShowUrl)
-    xpathQuery1 = "//div[@class='itemdetails']"
-    shows = htmlResponse.xpath(xpathQuery1)
-    
+    shows = htmlResponse.xpath("//div[@class='itemdetails']")
     for show in shows:
         inner = show.xpath("h3/a")
         if len(inner) > 0:
             inner = inner[0]
             video = {}
             video['ShowName'] = inner.xpath("span[@class='title']")[0].text
-            Log("Found Show " + video['ShowName'])
-        
             if video['ShowName'] == ShowTitle:
                 video['Url'] = BASE + inner.get('href')
-                Log("Url" + video['Url'])
+                video['Air Date'] = inner.xpath("span[@class='subtitle']")[0].text
                 try:
                     video['Episode'] = inner.xpath("span[@class='subtitle']/span")[0].text
                 except:
                     video['Episode'] = inner.xpath("span[@class='subtitle']")[0].text
-                    
-                video['Air Date'] = inner.xpath("span[@class='subtitle']")[0].text
                 try:
                     video['Summary'] = show.xpath("p")[0].text
                 except:
                     video['Summary'] = "unknown"
-                
-                Log("Episode = " + str(video['Episode']))
-                Log("Show = " + video['ShowName'])
                 dir.Append(WebVideoItem(video['Url']+"?play=1", title=str(video['Episode']),summary=video['Summary'], http_cookies=httpCookies))
             else:
                 pass
-    
     return dir
