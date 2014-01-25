@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <key>URL</key>
+        <dict>
+            <key>channel7</key>
+            <dict>
+                <key>Identifier</key>
+                <string>com.plexapp.plugins.channel7</string>
+                <key>URLPatterns</key>
+                <array>
+                    <string>http://au.tv.yahoo.com/plus7/.+</string>
+                </array>
+            </dict>
+        </dict>
+        <key>PlexFrameworkFlags</key>
+        <array>
+        	<string>UseRealRTMP</string>
+        </array>        
+    </dict>
+</plist>

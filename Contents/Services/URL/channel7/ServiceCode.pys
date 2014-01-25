@@ -1,0 +1,128 @@
+#http://au.tv.yahoo.com/plus7/scandal/-/watch/20591708/mon-6-jan-series-2-episode-18/
+
+
+def MetadataObjectForURL(url):
+    
+    #details = DoAmfRequest(url)    
+    page = HTML.ElementFromURL(url)
+    
+    show = page.xpath("//li[@class='clearfix playing not-playing']/div/h3/a/span[@class='title']")
+    Log('Got show: ' + show)
+    summary = page.xpath("//li[@class='clearfix playing not-playing']/div/div/p")[0].text
+    title = page.xpath("//li[@class='clearfix playing not-playing']/div/h3/a/span[@class='subtitle']")
+    Log('Got title: ' + title)
+    thumb = page.xpath("//li[@class='clearfix playing not-playing']/div/h3/a/img")[0].get('src')
+    Log('Got thumb:' + thumb)
+        
+    return EpisodeObject(
+        title=title,
+        summary=summary,
+        thumb=thumb,
+        show = show,
+    )
+    
+def MediaObjectsForURL(url):
+    details = DoAmfRequest(url)
+    objects = []
+    videoRes = []
+    
+    for video in details['renditions']:
+        player_url = video['defaultURL']
+        player = player_url[:player_url.find('&')]
+        clip = player_url[player_url.find('&') + 1:]
+        swf_url = "http://admin.brightcove.com/viewer/us20140108.2039/BrightcoveBootloader.swf"
+        Log('dealing with rendition: ' + str(video['encodingRate']))
+        
+        if video['frameHeight'] in videoRes:
+            Log('duplicate rendition found for ' + str(video['frameHeight']))
+        else:
+            objects.append(MediaObject(
+                parts = [PartObject(key = RTMPVideoURL(player, clip, swf_url = swf_url))],
+                video_resolution = video['frameHeight'],
+                video_frame_rate = video['encodingRate']))
+            
+            videoRes.append(video['frameHeight'])
+        
+    objects = sorted(objects, key=lambda media: media.video_frame_rate, reverse=True)   
+    return objects
+    
+    
+#########################################################################################
+def DoAmfRequest(url):
+    #Javascript is inserting element into DOM so simply requesting page will not
+    # give us directly the brightcove PlayerID/PlayerKey
+    #
+    # instead we get the JS file that contains the PlayerID/PlayerKey
+    # but we can get the videoPlayer directly from the page
+    page = HTTP.Request(url).content
+    
+    #VIDEO_PLAYER = Regex('data-video-id="([0-9]+)"')
+    #videoPlayer = VIDEO_PLAYER.search(page).group(1)
+    try:
+        videoPlayer = page.xpath('//*[@id="brightcove_player20591708_plyr"]').get('data')
+        Log('Got videoPlayer:' + videoPlayer)
+        RE_KEYS = Regex('http://c\.brightcove\.com/services/viewer/federated_f9/([0-9]{13})\?isVid=1&amp;isUI=1&amp;playerKey=(.+)&amp.*>$')
+        playerID = RE_KEYS.search(page).group(1)
+        playerKey = RE_KEYS.search(page).group(2)
+        Log('PlayerID: '+playerID)
+        Log('playerKey: ' + playerKey)
+    
+    except:
+        Log('failed to get AMF keys from page')
+        playerID = '2513628633001'
+        playerKey = 'AQ~~%2CAAACKW9LG-E~%2CUJVysOuwpLSn92LCyvVVH2y0yFsLkZn3'
+        Log('PlayerID: '+playerID)
+        Log('playerKey: ' + playerKey)
+    
+    result = AmfRequest(url=url, playerID=playerID, playerKey=playerKey, videoPlayer=videoPlayer)
+   
+    return result
+
+#########################################################################################
+def AmfRequest(url=None, playerID=None, playerKey=None, videoPlayer=None):
+ 
+    endpoint = AMF_URL ## http://c.brightcove....ssagebroker/amf
+ 
+    if playerKey:
+        endpoint += '?playerId=%s' % playerKey
+ 
+    client = AMF.RemotingService(url=endpoint, user_agent='', amf_version=3)
+    service = client.getService('com.brightcove.experience.ExperienceRuntimeFacade')
+   
+    AMF.RegisterClass(ContentOverride, 'com.brightcove.experience.ContentOverride')
+    AMF.RegisterClass(ViewerExperienceRequest, 'com.brightcove.experience.ViewerExperienceRequest')
+ 
+    video_obj = ContentOverride(videoPlayer)
+    experience = ViewerExperienceRequest(url, playerID, playerKey, video_obj)
+   
+    try:
+   
+        result = service.getDataForExperience('', experience)
+        Log(result.items())
+        return result['programmedContent']['videoPlayer']['mediaDTO']
+    except:
+        Log('Exception in AMF Request')
+        raise Ex.MediaGeoblocked
+
+
+####################################################################################################
+class ContentOverride(object):
+        def __init__ (self, videoPlayer=None):
+                self.contentType = int(0)
+                self.contentIds = None
+                self.target = 'videoPlayer'
+                self.contentId = int(videoPlayer)
+                self.featuredRefId = None
+                self.contentRefIds = None
+                self.featuredId = float('nan')
+                self.contentRefId = None
+
+class ViewerExperienceRequest(object):
+        def __init__ (self, url=None, playerID=None, playerKey=None, video_obj=None):
+                self.experienceId = int(playerID)
+                self.playerKey = playerKey
+                self.contentOverrides = []
+                self.contentOverrides.append(video_obj)
+                self.TTLToken = ''
+                self.URL = url
+                self.deliveryType = float('nan')    
