@@ -3,6 +3,24 @@
 
 def MetadataObjectForURL(url):
     
+    details = DoAmfRequest(url)    
+    page = HTML.ElementFromURL(url)
+    
+    show = page.xpath("//li[@class='clearfix playing not-playing']/div/h3/a/span[@class='title']")
+    Log('Got show: ' + show)
+    summary = page.xpath("//li[@class='clearfix playing not-playing']/div/div/p")[0].text
+    title = page.xpath("//li[@class='clearfix playing not-playing']/div/h3/a/span[@class='subtitle']")
+    Log('Got title: ' + title)
+    thumb = page.xpath("//li[@class='clearfix playing not-playing']/div/h3/a/img")[0].get('src')
+    Log('Got thumb:' + thumb)
+        
+    return EpisodeObject(
+        title=title,
+        summary=summary,
+        thumb=thumb,
+        show = show,
+    )
+    
 def MediaObjectsForURL(url):
     
     
@@ -15,24 +33,22 @@ def DoAmfRequest(url):
     # instead we get the JS file that contains the PlayerID/PlayerKey
     # but we can get the videoPlayer directly from the page
     page = HTTP.Request(url).content
-    VIDEO_PLAYER = Regex('data-video-id="([0-9]+)"')
-    videoPlayer = VIDEO_PLAYER.search(page).group(1)
-    Log('videoPlayer: ' +videoPlayer)
-
-    JS_EPISODE = Regex('/js/ninemsn/portal/jumpin/website/episode/episode\..*\.js')
+    
+    #VIDEO_PLAYER = Regex('data-video-id="([0-9]+)"')
+    #videoPlayer = VIDEO_PLAYER.search(page).group(1)
     try:
-        episodeJS = JS_EPISODE.search(page).group(0)
-        Log('Got episode JS:' + episodeJS)
-        JSpage = HTTP.Request('http://www.jump-in.com.au'+episodeJS).content
-        PLAYER = Regex('brightcove:\{player:\{id:"([0-9]+)",key:"([\w~,]+)"\}')
-        playerID = PLAYER.search(JSpage).group(1)
-        playerKey = PLAYER.search(JSpage).group(2)
-        Log('JS playerID: ' + playerID)
-        Log('JS playerKEY: ' + playerKey)
+        videoPlayer = page.xpath('//*[@id="brightcove_player20591708_plyr"]').get('data')
+        Log('Got videoPlayer:' + videoPlayer)
+        RE_KEYS = Regex('http://c\.brightcove\.com/services/viewer/federated_f9/([0-9]{13})\?isVid=1&amp;isUI=1&amp;playerKey=(.+)&amp.*>$')
+        playerID = RE_KEYS.search(page).group(1)
+        playerKey = RE_KEYS.search(page).group(2)
+        Log('PlayerID: '+playerID)
+        Log('playerKey: ' + playerKey)
+    
     except:
-        Log('failed to get episode JS')
-        playerID = '2707570115001'    
-        playerKey = 'AQ~~,AAABecFwRRk~,e1HkYhZIbphOhnqxdoxcNshnyvC4rVPN'
+        Log('failed to get AMF keys from page')
+        playerID = '2513628633001'
+        playerKey = 'AQ~~%2CAAACKW9LG-E~%2CUJVysOuwpLSn92LCyvVVH2y0yFsLkZn3'
         Log('PlayerID: '+playerID)
         Log('playerKey: ' + playerKey)
     
