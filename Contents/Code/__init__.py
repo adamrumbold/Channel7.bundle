@@ -15,6 +15,7 @@ def Start():
     
     Plugin.AddPrefixHandler(VIDEO_PREFIX, VideoMainMenu, L('VideoTitle'), ICON, ART)
     Plugin.AddViewGroup("InfoList", viewMode="InfoList", mediaType="items")
+    Plugin.AddViewGroup('List', viewMode='List', mediaType='items')
     MediaContainer.art = R(ART)
     MediaContainer.title1 = NAME
     DirectoryItem.thumb = R(ICON)
@@ -26,7 +27,7 @@ def VideoMainMenu():
     oc = ObjectContainer(title2='Prime7 On Demand', view_group='List')
     
     xml = HTML.ElementFromURL(BROWSE_URL, headers={'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0.1) Gecko/20100101 Firefox/4.0.1'})
-    for Entry in xml.xpath("//li[.]"):
+    for Entry in xml.xpath("//*[@id='atoz']/ul/li"):
         show = {}
         try:
             
@@ -41,15 +42,15 @@ def VideoMainMenu():
                 title=show['Title'],
                 thumb=show['Thumb'],
             ))
-            
         except IndexError:
             Log.Debug ("failed parsing " + str(show) )
+    Log("Returning OC")    
     return oc
 
 @route(VIDEO_PREFIX + '/show')
 def SeriesMenu(ShowUrl, ShowTitle):
     Log("In series menu")
-    oc = ObjectContainer(title2='ShowTitle', view_group='InfoList')
+    oc = ObjectContainer(title2=ShowTitle, view_group='InfoList')
     htmlResponse = HTML.ElementFromURL(ShowUrl)
     shows = htmlResponse.xpath("//div[@class='itemdetails']")
     for show in shows:
