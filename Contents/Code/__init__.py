@@ -3,7 +3,6 @@
 
 VIDEO_PREFIX = "/video/channel7"
 NAME = L('Title')
-VERSION = 0.5
 DEFAULT_CACHE_INTERVAL = 1800
 OTHER_CACHE_INTERVAL = 300
 ART           = 'prime7-background.jpg'
@@ -21,24 +20,36 @@ def Start():
     DirectoryItem.thumb = R(ICON)
         
 ####################################################################################################
-
+@route(VIDEO_PREFIX + '/home')
 def VideoMainMenu():
     cookies = HTTP.CookiesForURL("http://au.tv.yahoo.com")
-    dir = MediaContainer(viewGroup="InfoList")
+    oc = ObjectContainer(title2='Prime7 On Demand', view_group='List')
+    
     xml = HTML.ElementFromURL(BROWSE_URL, headers={'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0.1) Gecko/20100101 Firefox/4.0.1'})
     for Entry in xml.xpath("//li[.]"):
         show = {}
         try:
+            
             show['Title'] = Entry.xpath("h3/a")[0].text
             show['Thumb'] = Entry.xpath("a[1]/img")[0].get('src')
             show['Url'] = Entry.xpath("h3/a")[0].get('href')
-            dir.Append(Function(DirectoryItem(SeriesMenu, title=show['Title'], thumb=show['Thumb']), ShowUrl=show['Url'], ShowTitle=show['Title'], httpCookies=cookies))
+            Log('Got show: ' + show['Title'])
+            Log('Got Url: ' + show['Url'])
+            Log('Got thumb: ' + show['Thumb'])
+            oc.add(DirectoryObject(
+                key=Callback(SeriesMenu, ShowUrl=show['Url'], ShowTitle=show['Title']),
+                title=show['Title'],
+                thumb=show['Thumb'],
+            ))
+            
         except IndexError:
             Log.Debug ("failed parsing " + str(show) )
-    return dir
+    return oc
 
-def SeriesMenu(sender, ShowUrl, ShowTitle, httpCookies):
-    dir = MediaContainer(title1="channel 7", title2=ShowTitle, viewGroup="InfoList")
+@route(VIDEO_PREFIX + '/show')
+def SeriesMenu(ShowUrl, ShowTitle):
+    Log("In series menu")
+    oc = ObjectContainer(title2='ShowTitle', view_group='InfoList')
     htmlResponse = HTML.ElementFromURL(ShowUrl)
     shows = htmlResponse.xpath("//div[@class='itemdetails']")
     for show in shows:
@@ -58,7 +69,12 @@ def SeriesMenu(sender, ShowUrl, ShowTitle, httpCookies):
                     video['Summary'] = show.xpath("p")[0].text
                 except:
                     video['Summary'] = "unknown"
-                dir.Append(WebVideoItem(video['Url']+"?play=1", title=str(video['Episode']),summary=video['Summary'], http_cookies=httpCookies))
+                vco = VideoClipObject(
+                        url= video['Url'], 
+                        title=video['Episode'],
+                        summary=video['Summary'],
+                     )
+                oc.add(vco)
             else:
                 pass
-    return dir
+    return oc
