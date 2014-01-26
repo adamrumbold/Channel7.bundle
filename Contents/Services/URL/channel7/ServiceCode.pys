@@ -1,4 +1,5 @@
 #http://au.tv.yahoo.com/plus7/scandal/-/watch/20591708/mon-6-jan-series-2-episode-18/
+AMF_URL = 'http://c.brightcove.com/services/messagebroker/amf'
 
 
 def MetadataObjectForURL(url):
@@ -22,6 +23,7 @@ def MetadataObjectForURL(url):
     )
     
 def MediaObjectsForURL(url):
+    Log("About to do AMF request for: " + url)
     details = DoAmfRequest(url)
     objects = []
     videoRes = []
@@ -55,22 +57,33 @@ def DoAmfRequest(url):
     # instead we get the JS file that contains the PlayerID/PlayerKey
     # but we can get the videoPlayer directly from the page
     page = HTTP.Request(url).content
-    
-    #VIDEO_PLAYER = Regex('data-video-id="([0-9]+)"')
+    #page2 = HTML.ElementFromURL(url)
+    #ID_RE = Regex('/([0-9]{8})/.*')
+    #videoPlayer = ID_RE.search(url).group(1)
+    #Log('Got video ID: '+ vidID)
+    #VIDEO_PLAYER = Regex('federated_f9/([0-9]+)\?')
     #videoPlayer = VIDEO_PLAYER.search(page).group(1)
+    #videoURL = page2.xpath("/html/head/meta[@property='og:video']")[0].get('content')
+    #videoPlayer = VIDEO_PLAYER.search(videoURL).group(1)
+    #Log('Got videoPlayer:' + videoPlayer)
+        
     try:
-        videoPlayer = page.xpath('//*[@id="brightcove_player20591708_plyr"]').get('data')
-        Log('Got videoPlayer:' + videoPlayer)
-        RE_KEYS = Regex('http://c\.brightcove\.com/services/viewer/federated_f9/([0-9]{13})\?isVid=1&amp;isUI=1&amp;playerKey=(.+)&amp.*>$')
+        
+        #videoPlayer = page.xpath('//*[@id="brightcove_player'+vidID+'_plyr"]')[0].get('data')
+        #videoPlayer = page.xpath('//*[@class="BrightcoveExperience"]')[0].get('data')
+        RE_KEYS = Regex('http://c\.brightcove\.com/services/viewer/federated_f9/([0-9]{13})\?isVid=1&isUI=1&playerKey=(.*)&videoID=ref:([0-9]+)"')
         playerID = RE_KEYS.search(page).group(1)
         playerKey = RE_KEYS.search(page).group(2)
+        videoPlayer= RE_KEYS.search(page).group(3)
         Log('PlayerID: '+playerID)
         Log('playerKey: ' + playerKey)
+        Log('VideoPlayer: ' + videoPlayer)
     
     except:
         Log('failed to get AMF keys from page')
         playerID = '2513628633001'
         playerKey = 'AQ~~%2CAAACKW9LG-E~%2CUJVysOuwpLSn92LCyvVVH2y0yFsLkZn3'
+        #playerKey = 'AQ~~,AAACKW9LH8k~,A7HfECo5t7AuC7lufcI2HWypMz2lVPlU'
         Log('PlayerID: '+playerID)
         Log('playerKey: ' + playerKey)
     
